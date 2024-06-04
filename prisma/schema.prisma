@@ -1,0 +1,175 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Empresa {
+  id                  Int     @id @default(autoincrement())
+  razao_social        String  @db.VarChar(100)
+  cnpj                String  @db.VarChar(20)
+  inscricao_estadual  String? @db.VarChar(20)
+  inscricao_municipal String? @db.VarChar(20)
+  solid_versao        String? @db.VarChar(10)
+  ativo               Boolean
+  endereco_id         Int?
+
+  endereco Endereco? @relation(name: "FK_Endereco_endereco_id", fields: [endereco_id], references: [id])
+
+  usuarios        Usuario[]       @relation(name: "FK_Usuario_empresa_id")
+  materiais       Material[]      @relation(name: "FK_Material_empresa_id")
+  materia_primas  MateriaPrima[]  @relation(name: "FK_MateriaPrima_empresa_id")
+  maquinas        Maquina[]       @relation(name: "FK_Maquina_empresa_id")
+  sequencias      Sequencia[]     @relation(name: "FK_Sequencia_empresa_id")
+  processos       Processo[]      @relation(name: "FK_Processo_empresa_id")
+  templates_solid TemplateSolid[] @relation(name: "FK_TemplateSolid_empresa_id")
+
+  @@map("empresas")
+}
+
+model Endereco {
+  id              Int     @id @default(autoincrement())
+  cep             String? @db.VarChar(9)
+  endereco        String? @db.VarChar(50)
+  endereco_numero String? @db.VarChar(6)
+  complemento     String? @db.VarChar(100)
+  bairro          String? @db.VarChar(50)
+  cidade          String? @db.VarChar(50)
+  uf              String? @db.VarChar(2)
+
+  empresas Empresa[] @relation(name: "FK_Endereco_endereco_id")
+
+  @@map("enderecos")
+}
+
+model Usuario {
+  id            Int      @id @default(autoincrement())
+  nome          String   @db.VarChar(100)
+  login         String   @db.VarChar(80)
+  senha         String?  @db.VarChar(100)
+  email         String?  @db.VarChar(250)
+  projetista    Boolean  @default(false)
+  responsavel   Boolean  @default(false)
+  ativo         Boolean
+  observacao    String?  @db.VarChar(255) // Para longText usar @db.LongText()
+  criado_em     DateTime @default(now())
+  atualizado_em DateTime @default(now())
+  tipo_perfil   Int
+  empresa_id    Int
+
+  empresa Empresa @relation(name: "FK_Usuario_empresa_id", fields: [empresa_id], references: [id])
+
+  @@map("usuarios")
+}
+
+model Material {
+  id            Int      @id @default(autoincrement())
+  descricao     String   @db.VarChar(250)
+  ativo         Boolean
+  criado_em     DateTime @default(now())
+  atualizado_em DateTime @default(now())
+  empresa_id    Int
+
+  empresa  Empresa        @relation(name: "FK_Material_empresa_id", fields: [empresa_id], references: [id])
+  materias MateriaPrima[] @relation(name: "FK_Material_material_id")
+
+  @@map("materiais")
+}
+
+model MateriaPrima {
+  id                 Int      @id @default(autoincrement())
+  codigo             Int
+  descricao          String   @db.VarChar(250)
+  tipo_materia_prima Int
+  espessura          Float?
+  ativo              Boolean
+  criado_em          DateTime @default(now())
+  atualizado_em      DateTime @default(now())
+  empresa_id         Int
+  material_id        Int
+
+  empresa  Empresa  @relation(name: "FK_MateriaPrima_empresa_id", fields: [empresa_id], references: [id])
+  material Material @relation(name: "FK_Material_material_id", fields: [material_id], references: [id])
+
+  @@map("materia_primas")
+}
+
+model Maquina {
+  id            Int      @id @default(autoincrement())
+  codigo        Int
+  descricao     String   @db.VarChar(250)
+  ativo         Boolean
+  criado_em     DateTime @default(now())
+  atualizado_em DateTime @default(now())
+  empresa_id    Int
+
+  empresa   Empresa    @relation(name: "FK_Maquina_empresa_id", fields: [empresa_id], references: [id])
+  processos Processo[] @relation(name: "FK_Processo_maquina_id")
+
+  @@map("maquinas")
+}
+
+model Sequencia {
+  id            Int      @id @default(autoincrement())
+  descricao     String   @db.VarChar(250)
+  ativo         Boolean
+  criado_em     DateTime @default(now())
+  atualizado_em DateTime @default(now())
+  empresa_id    Int
+
+  empresa    Empresa    @relation(name: "FK_Sequencia_empresa_id", fields: [empresa_id], references: [id])
+  sequencias Processo[] @relation(name: "FK_Processo_sequencia_id")
+
+  @@map("sequencias")
+}
+
+model Processo {
+  id            Int      @id @default(autoincrement())
+  codigo        Int
+  descricao     String   @db.VarChar(250)
+  ativo         Boolean
+  gerar_dxf     Boolean
+  criado_em     DateTime @default(now())
+  atualizado_em DateTime @default(now())
+  empresa_id    Int
+  sequencia_id  Int
+  maquina_id    Int
+
+  empresa   Empresa   @relation(name: "FK_Processo_empresa_id", fields: [empresa_id], references: [id])
+  sequencia Sequencia @relation(name: "FK_Processo_sequencia_id", fields: [sequencia_id], references: [id])
+  maquina   Maquina   @relation(name: "FK_Processo_maquina_id", fields: [maquina_id], references: [id])
+
+  @@map("processos")
+}
+
+model TemplateSolid {
+  id             Int     @id @default(autoincrement())
+  formato_a4r    String? @db.VarChar(500)
+  formato_a4p    String? @db.VarChar(500)
+  formato_a3     String? @db.VarChar(500)
+  formato_a2     String? @db.VarChar(500)
+  formato_a1     String? @db.VarChar(500)
+  formato_a0     String? @db.VarChar(500)
+  template_a4r   String? @db.VarChar(100)
+  template_a4p   String? @db.VarChar(100)
+  template_a3    String? @db.VarChar(100)
+  template_a2    String? @db.VarChar(100)
+  template_a1    String? @db.VarChar(100)
+  template_a0    String? @db.VarChar(100)
+  lista_montagem String? @db.VarChar(500)
+  lista_soldagem String? @db.VarChar(500)
+  empresa_id     Int
+
+  empresa Empresa @relation(name: "FK_TemplateSolid_empresa_id", fields: [empresa_id], references: [id])
+
+  @@map("templates_solid")
+}

@@ -1,0 +1,15 @@
+-- AlterTable
+ALTER TABLE `templates_solid` MODIFY `formato_a4r` VARCHAR(500) NULL,
+    MODIFY `formato_a4p` VARCHAR(500) NULL,
+    MODIFY `formato_a3` VARCHAR(500) NULL,
+    MODIFY `formato_a2` VARCHAR(500) NULL,
+    MODIFY `formato_a1` VARCHAR(500) NULL,
+    MODIFY `formato_a0` VARCHAR(500) NULL,
+    MODIFY `template_a4r` VARCHAR(100) NULL,
+    MODIFY `template_a4p` VARCHAR(100) NULL,
+    MODIFY `template_a3` VARCHAR(100) NULL,
+    MODIFY `template_a2` VARCHAR(100) NULL,
+    MODIFY `template_a1` VARCHAR(100) NULL,
+    MODIFY `template_a0` VARCHAR(100) NULL,
+    MODIFY `lista_montagem` VARCHAR(500) NULL,
+    MODIFY `lista_soldagem` VARCHAR(500) NULL;
